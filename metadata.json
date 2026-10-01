@@ -1,0 +1,6 @@
+{
+  "name": "Echo Explorer - Sound & Wave Science Lab",
+  "description": "An interactive elementary school science simulation demonstrating how sound waves travel, bounce off surfaces, and create echoes.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
