@@ -277,8 +277,8 @@ export const ScienceGuideModal: React.FC<ScienceGuideModalProps> = ({
                 <ul className="list-disc list-inside space-y-1 text-slate-300 pl-2 text-[11px]">
                   <li><strong>Hard Granite:</strong> R = 95% reflection → only 0.2 dB lost!</li>
                   <li><strong>Brick Wall:</strong> R = 85% reflection → 0.7 dB lost.</li>
-                  <li><strong>Pine Forest:</strong> R = 20% reflection → 7.0 dB lost (branches scatter sound).</li>
-                  <li><strong>Acoustic Foam:</strong> R = 3% reflection → 15.2 dB lost (trapped inside porous fibers as microscopic heat!).</li>
+                  <li><strong>Pine Forest:</strong> R = 35% reflection → 4.6 dB lost (branches and needles scatter sound).</li>
+                  <li><strong>Acoustic Foam:</strong> R = 8% reflection → 11.0 dB lost (trapped inside porous fibers as microscopic heat!).</li>
                 </ul>
               </div>
 

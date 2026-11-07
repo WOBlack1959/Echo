@@ -61,6 +61,60 @@ export const EchoMeter: React.FC<EchoMeterProps> = ({
         </div>
       </div>
 
+      {/* PROMINENT HERO DISPLAY: EXACT TIME UNTIL ECHO REACHES THE GUY */}
+      <div className="bg-gradient-to-r from-emerald-500/20 via-sky-500/15 to-amber-500/15 border-2 border-emerald-400/60 rounded-xl p-4 md:p-5 shadow-lg space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shrink-0">
+              <Timer className="w-7 h-7 animate-pulse text-emerald-400" />
+            </div>
+            <div>
+              <span className="text-[11px] font-black uppercase tracking-wider text-emerald-300 flex items-center gap-1">
+                <span>⏱️ TIME FROM INITIAL SOUND UNTIL ECHO REACHES GUY:</span>
+              </span>
+              <div className="flex items-baseline gap-2.5">
+                <span className="text-2xl sm:text-4xl font-black text-white font-mono tracking-tight">
+                  {isSpace ? 'Never (No sound in space)' : `${roundTripTime.toFixed(3)} seconds`}
+                </span>
+                {!isSpace && (
+                  <span className="text-xs sm:text-sm font-semibold text-emerald-300 font-mono">
+                    ({Math.round(roundTripTime * 1000)} ms)
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-900/90 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-300 font-mono text-right">
+            <div className="text-[10px] text-slate-400 uppercase font-sans font-bold">Physics Equation:</div>
+            <strong className="text-emerald-300">
+              t = (2 × {distance}m) ÷ {speed} m/s
+            </strong>
+          </div>
+        </div>
+
+        {/* Journey breakdown: Outward + Return = Total */}
+        {!isSpace && (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1 text-xs">
+            <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+              <span className="text-slate-400 block text-[11px]">1. Outward Leg (Alex ➔ Wall)</span>
+              <span className="font-bold text-amber-300 font-mono text-sm">+{oneWayTime.toFixed(3)} s</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">{distance}m ÷ {speed} m/s</span>
+            </div>
+            <div className="bg-slate-900/80 p-2.5 rounded-lg border border-slate-800">
+              <span className="text-slate-400 block text-[11px]">2. Return Leg (Wall ➔ Alex)</span>
+              <span className="font-bold text-sky-300 font-mono text-sm">+{oneWayTime.toFixed(3)} s</span>
+              <span className="text-[10px] text-slate-400 block mt-0.5">{distance}m ÷ {speed} m/s</span>
+            </div>
+            <div className="bg-slate-900/90 p-2.5 rounded-lg border border-emerald-500/50">
+              <span className="text-emerald-400 font-bold block text-[11px]">3. Total Wait for Guy</span>
+              <span className="font-black text-emerald-300 font-mono text-base">={roundTripTime.toFixed(3)} s</span>
+              <span className="text-[10px] text-slate-300 block mt-0.5">Round trip (there & back)</span>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Decibel Comparison Feature Box (New!) */}
       <div className="bg-gradient-to-r from-amber-500/10 via-sky-500/10 to-emerald-500/10 border border-slate-700/80 rounded-xl p-4 space-y-3">
         <div className="flex items-center justify-between">

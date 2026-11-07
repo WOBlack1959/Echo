@@ -58,6 +58,25 @@ export const EchoCanvas: React.FC<EchoCanvasProps> = ({
   const [alexReaction, setAlexReaction] = useState<string | null>(null);
   const reactionTimerRef = useRef<number | null>(null);
 
+  // Live Echo Stopwatch & Timing to Guy
+  const speed = ENVIRONMENTS[environment].speedOfSound;
+  const theoreticalRoundTrip = speed > 0 ? (2 * distance) / speed : 0;
+  const theoreticalOneWay = speed > 0 ? distance / speed : 0;
+
+  const [stopwatch, setStopwatch] = useState<{
+    status: 'idle' | 'running_out' | 'running_back' | 'reached';
+    elapsedSec: number;
+    totalRoundTripSec: number;
+    oneWaySec: number;
+    reachedTime: number | null;
+  }>({
+    status: 'idle',
+    elapsedSec: 0,
+    totalRoundTripSec: theoreticalRoundTrip,
+    oneWaySec: theoreticalOneWay,
+    reachedTime: null,
+  });
+
   // Simulation waves state
   const wavesRef = useRef<WavePulse[]>([]);
   const nextWaveId = useRef(1);
@@ -236,6 +255,7 @@ export const EchoCanvas: React.FC<EchoCanvasProps> = ({
         if (!wave.isReflected && wave.radiusMeters >= wave.wallXPos) {
           // Hit the wall! Create reflected wave
           wave.isReflected = true;
+          setStopwatch((prev) => ({ ...prev, status: 'running_back' }));
           // Spawn impact bounce sparkle particles
           drawWallImpactSparkles(ctx, wallCanvasX, alexY);
         }
@@ -265,6 +285,14 @@ export const EchoCanvas: React.FC<EchoCanvasProps> = ({
             const trueRoundTripSec = (2 * wave.wallXPos) / wave.speed;
             onEchoDetected(trueRoundTripSec);
 
+            setStopwatch({
+              status: 'reached',
+              elapsedSec: trueRoundTripSec,
+              totalRoundTripSec: trueRoundTripSec,
+              oneWaySec: trueRoundTripSec / 2,
+              reachedTime: trueRoundTripSec,
+            });
+
             const initialWaveDb = getInitialDb(wave.soundType, wave.loudness);
             const { echoDb, totalLossDb, isAudible } = calculateEchoDecibels(
               initialWaveDb,
@@ -273,17 +301,17 @@ export const EchoCanvas: React.FC<EchoCanvasProps> = ({
               environment
             );
 
-            // Ear reaction badge on Alex with decibels
-            let echoMsg = `Echo: ${echoDb} dB (-${totalLossDb} dB lost)`;
+            // Ear reaction badge on Alex with decibels and time to reach guy
+            let echoMsg = `${echoDb} dB (-${totalLossDb} dB lost)`;
             if (!isAudible) {
               echoMsg = `Too faint to hear! (${echoDb} dB)`;
             } else if (wave.material === 'curtain') {
               echoMsg = `Absorbed! 🤫 (${echoDb} dB)`;
             }
 
-            setAlexReaction(`Echo Heard! 👂 ${echoMsg}`);
+            setAlexReaction(`Echo reached me in ${trueRoundTripSec.toFixed(3)}s! ⏱️👂 (${echoMsg})`);
             if (reactionTimerRef.current) window.clearTimeout(reactionTimerRef.current);
-            reactionTimerRef.current = window.setTimeout(() => setAlexReaction(null), 2500);
+            reactionTimerRef.current = window.setTimeout(() => setAlexReaction(null), 3200);
           }
 
           // Keep wave alive until it passes Alex by a small margin
@@ -382,11 +410,49 @@ export const EchoCanvas: React.FC<EchoCanvasProps> = ({
       />
 
       {/* Top Overlay Badge with Quick Hint */}
-      <div className="absolute top-3 left-3 bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-slate-200 flex items-center gap-2 pointer-events-none shadow-md">
+      <div className="absolute top-3 left-3 bg-slate-900/85 backdrop-blur-md border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs text-slate-200 flex items-center gap-2 pointer-events-none shadow-md hidden lg:flex">
         <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
         <span className="font-semibold text-emerald-300">Interactive Canvas:</span>
         <span className="hidden sm:inline">Drag the wall or click anywhere to change distance!</span>
         <span className="sm:hidden">Drag wall to change distance!</span>
+      </div>
+
+      {/* Center Stopwatch: Time from Initial Sound until Echo reaches Guy */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 pointer-events-none z-10 flex flex-col items-center">
+        <div
+          className={`backdrop-blur-md px-3.5 py-1.5 rounded-xl border shadow-lg flex items-center gap-2.5 transition-all duration-300 ${
+            stopwatch.status === 'reached'
+              ? 'bg-emerald-950/95 border-emerald-400 text-emerald-200 ring-2 ring-emerald-400/50 scale-105'
+              : stopwatch.status === 'running_out' || stopwatch.status === 'running_back'
+              ? 'bg-amber-950/95 border-amber-400 text-amber-200 ring-2 ring-amber-400/40'
+              : 'bg-slate-900/90 border-slate-700/80 text-slate-200'
+          }`}
+        >
+          <span className="text-base">⏱️</span>
+          <div className="text-center">
+            <div className="text-[10px] uppercase font-bold tracking-wider text-slate-300">
+              {stopwatch.status === 'reached'
+                ? 'ECHO REACHED GUY! 🎉'
+                : stopwatch.status === 'running_out'
+                ? 'Sound Traveling Outward...'
+                : stopwatch.status === 'running_back'
+                ? 'Echo Bouncing Back to Guy...'
+                : 'Time until Echo Reaches Guy:'}
+            </div>
+            <div className="text-xs sm:text-sm font-black font-mono flex items-center justify-center gap-1.5">
+              <span className={stopwatch.status === 'reached' ? 'text-emerald-300 font-extrabold' : 'text-amber-300'}>
+                {environment === 'space'
+                  ? 'No Sound in Space'
+                  : `${stopwatch.status === 'reached' && stopwatch.reachedTime ? stopwatch.reachedTime.toFixed(3) : theoreticalRoundTrip.toFixed(3)}s`}
+              </span>
+              {environment !== 'space' && (
+                <span className="text-[10px] text-slate-400 font-sans font-normal">
+                  ({Math.round((stopwatch.status === 'reached' && stopwatch.reachedTime ? stopwatch.reachedTime : theoreticalRoundTrip) * 1000)} ms round-trip)
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Top-Right Live Decibel Strength HUD */}
